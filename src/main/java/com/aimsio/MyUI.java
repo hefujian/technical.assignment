@@ -1,6 +1,6 @@
-package aimsio;
+package com.aimsio;
 
-import aimsio.view.ChartView;
+import com.aimsio.view.ChartView;
 import com.vaadin.annotations.Theme;
 import com.vaadin.annotations.Title;
 import com.vaadin.annotations.VaadinServletConfiguration;
@@ -10,6 +10,7 @@ import com.vaadin.server.VaadinServlet;
 import com.vaadin.ui.UI;
 
 import javax.servlet.annotation.WebServlet;
+import java.sql.SQLException;
 
 /**
  * This UI is the application entry point. A UI may either represent a browser window
@@ -20,12 +21,16 @@ import javax.servlet.annotation.WebServlet;
  */
 @Theme("valo")
 @Title("Aimsio Assignment")
-@Widgetset("aimsio.ChartsWidgetset")
+@Widgetset("com.aimsio.ChartsWidgetset")
 public class MyUI extends UI {
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
-        setContent(new ChartView());
+        try {
+            setContent(new ChartView());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)
