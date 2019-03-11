@@ -7,13 +7,13 @@ import com.vaadin.addon.charts.model.style.FontWeight;
 import com.vaadin.addon.charts.model.style.SolidColor;
 import com.vaadin.addon.charts.model.style.Style;
 
+import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.vaadin.addon.charts.model.Compare.PERCENT;
 
 public class ChartUtils {
-    public static Chart ChartBuilder() throws SQLException {
+    public static Chart chartBuilder() throws SQLException {
         Chart timeline = new Chart();
         timeline.setSizeFull();
 
@@ -51,10 +51,45 @@ public class ChartUtils {
         timeline.drawChart(configuration);
         return timeline;
     }
+    public static Chart rebuild(Chart chart,String assetUN, String status) throws SQLException {
+        Map<String,DataSeries> map = createSeries(assetUN,status);
+        Configuration configuration = chart.getConfiguration();
+        List<Series> newSeries = new ArrayList<>();
+        for (DataSeries value : map.values()) {
+            newSeries.add(value);
+        }
+        configuration.setSeries(newSeries);
+        chart.drawChart(configuration);
+        return chart;
+    }
     private static Map<String,DataSeries> createSeries() throws SQLException {
+        return createSeries("","");
+    }
+
+    private static Map<String,DataSeries> createSeries(String assetUN, String status) throws SQLException {
+        String sql = "SELECT STATUS AS 'status', COUNT(STATUS) AS number,entry_date FROM assets.signal";
+
+        List<Map<String,Object>> dataSet = new ArrayList<>();
+        if(assetUN!=null && assetUN!="" && status!=null && status!=""){
+            sql += " WHERE assetun=? and status=?";
+        }else if(assetUN!=null && assetUN!=""){
+            sql += " WHERE assetun=?";
+        }else if(status!=null && status!=""){
+            sql += " WHERE status=?";
+        }
+        sql += "  GROUP BY entry_date,STATUS ORDER BY entry_date";
+
         Map<String, DataSeries>  seriesMap = new HashMap<String,DataSeries>();
 
-        List<Map<String,Object>> dataSet = DBUtils.executeQuery("SELECT STATUS AS 'status', COUNT(STATUS) AS number,entry_date FROM assets.signal GROUP BY entry_date,STATUS ORDER BY entry_date");
+        if(assetUN!=null && assetUN!="" && status!=null && status!=""){
+            dataSet= DBUtils.executeQuery(sql,assetUN,status);
+        }else if(assetUN!=null && assetUN!=""){
+            dataSet= DBUtils.executeQuery(sql,assetUN);
+
+        }else if(status!=null && status!=""){
+            dataSet= DBUtils.executeQuery(sql,status);
+        }else
+            dataSet= DBUtils.executeQuery(sql);
 
         ListIterator<Map<String, Object>> iterator =dataSet.listIterator();
         while (iterator.hasNext()){

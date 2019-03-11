@@ -26,11 +26,7 @@ public class MyUI extends UI {
 
     @Override
     protected void init(VaadinRequest vaadinRequest) {
-        try {
-            setContent(new ChartView());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        setContent(new ChartView());
     }
 
     @WebServlet(urlPatterns = "/*", name = "MyUIServlet", asyncSupported = true)

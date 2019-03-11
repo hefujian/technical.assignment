@@ -13,35 +13,26 @@ public class DBUtils {
 
     private DBUtils() {
         try {
-            /**获取属性文件中的值**/
+            /**Get db config**/
             String driverClassName = ConfigManager.getInstance().getString("jdbc.driver_class");
             String url = ConfigManager.getInstance().getString("jdbc.connection.url");
             String username = ConfigManager.getInstance().getString("jdbc.connection.username");
             String password =ConfigManager.getInstance().getString("jdbc.connection.password");
 
-            /**数据库连接池对象**/
-            cpds = new ComboPooledDataSource();
 
-            /**设置数据库连接驱动**/
+            cpds = new ComboPooledDataSource();
             cpds.setDriverClass(driverClassName);
-            /**设置数据库连接地址**/
             cpds.setJdbcUrl(url);
-            /**设置数据库连接用户名**/
             cpds.setUser(username);
-            /**设置数据库连接密码**/
             cpds.setPassword(password);
 
-            /**初始化时创建的连接数,应在minPoolSize与maxPoolSize之间取值.默认为3**/
             cpds.setInitialPoolSize(3);
-            /**连接池中保留的最大连接数据.默认为15**/
             cpds.setMaxPoolSize(10);
-            /**当连接池中的连接用完时，C3PO一次性创建新的连接数目;**/
             cpds.setAcquireIncrement(1);
             cpds.setIdleConnectionTestPeriod(60);
             cpds.setMaxIdleTime(3000);
         } catch (PropertyVetoException e) {
             e.printStackTrace();
-
         }
     }
 
@@ -72,23 +63,21 @@ public class DBUtils {
         return executeQuery(sql,null);
     }
 
-    public static List<Map<String, Object>> executeQuery(String sql, Object[] bindArgs) throws SQLException {
+    public static List<Map<String, Object>> executeQuery(String sql, Object... bindArgs) throws SQLException {
         List<Map<String, Object>> data = new ArrayList<>();
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
 
         try {
-            /**获取数据库连接池中的连接**/
+            /**Get connection from the pool**/
             connection = DBUtils.getInstance().getConnection();
             preparedStatement = connection.prepareStatement(sql);
             if (bindArgs != null) {
-                /**设置sql占位符中的值**/
                 for (int i = 0; i < bindArgs.length; i++) {
                     preparedStatement.setObject(i + 1, bindArgs[i]);
                 }
             }
-            /**执行sql语句，获取结果集**/
             resultSet = preparedStatement.executeQuery();
             ResultSetMetaData rsmd = resultSet.getMetaData();
             int columnCount = rsmd.getColumnCount();
